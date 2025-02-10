@@ -1,20 +1,43 @@
-FROM ubuntu:latest AS build
+# Etapa de build
+FROM eclipse-temurin:17-jdk AS build
 
-RUN apt-get update
-RUN apt-get install openjdk-23-jdk -y
+WORKDIR /app
 
-COPY . .
+COPY pom.xml .
+RUN apt-get update && apt-get install -y maven
+RUN mvn dependency:go-offline
 
-RUN apt-get install maven -y
-RUN mvn clean install
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-FROM openjdk:17-jdk-slim
+# Etapa final
+FROM eclipse-temurin:17-jre-slim
+
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
 
-COPY --from=build /target/todolist-1.0.0.jar app.jar
+CMD ["java", "-jar", "app.jar"]
 
-ENTRYPOINT [ "java", "-jar", "app.jar"]
+
+# FROM ubuntu:latest AS build
+
+# RUN apt-get update
+# RUN apt-get install openjdk-23-jdk -y
+
+# COPY . .
+
+# RUN apt-get install maven -y
+# RUN mvn clean install
+
+# FROM openjdk:17-jdk-slim
+
+# EXPOSE 8080
+
+# COPY --from=build /target/todolist-1.0.0.jar app.jar
+
+# ENTRYPOINT [ "java", "-jar", "app.jar"]
 
 
 
