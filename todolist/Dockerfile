@@ -11,7 +11,8 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Etapa final
-FROM eclipse-temurin:17-jre-slim
+FROM eclipse-temurin:17-jdk-slim
+
 
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
